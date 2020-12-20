@@ -1,6 +1,7 @@
 const express = require("express");
 const cors = require("cors");
-const { logger, unknownEndpoint } = require("./utils/middleware");
+const { logger, errorHandler, unknownEndpoint } = require("./utils/middleware");
+const bookmarksRouter = require("./controllers/bookmarks");
 
 const app = express();
 
@@ -9,11 +10,9 @@ app.use(express.json());
 app.use(logger());
 
 // Routes
-// ...
+app.use("/api/bookmarks", bookmarksRouter);
 
-app.use("/ping", (req, res) => res.send("Pong!"));
-
-// Handle unknown endpoints
+app.use(errorHandler);
 app.use(unknownEndpoint);
 
 module.exports = app;
