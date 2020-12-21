@@ -78,7 +78,7 @@ describe("Bookmarks", () => {
     expect(response.body.error).toBeDefined();
   });
 
-  test("can be created successfully", async () => {
+  test("can be created", async () => {
     const { body: savedBookmark } = await api
       .post(BASE_URL)
       .send(newBookmark)
@@ -108,7 +108,7 @@ describe("Bookmarks", () => {
     expect(bookmarksAtEnd).toHaveLength(initialBookmarks.length);
   });
 
-  test("can be deleted successfully", async () => {
+  test("can be deleted", async () => {
     const { body: bookmarksAtStart } = await api.get(BASE_URL);
     const bookmarkId = bookmarksAtStart[0].id;
 
