@@ -5,7 +5,6 @@ const bookmarkSchema = mongoose.Schema({
     type: String,
     required: [true, "Title is required"],
     trim: true,
-    minlength: [10, "Bookmark title must be at least 10 characters"],
     maxlength: [120, "Bookmark title must be less than 120 characters"],
   },
   // user: {
