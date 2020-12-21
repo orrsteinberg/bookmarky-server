@@ -4,13 +4,13 @@ const bcrypt = require("bcrypt");
 
 const containsValidChars = (string) => /^\w+$/.test(string);
 
-const userShemca = mongoose.Schema({
+const userSchema = mongoose.Schema({
   username: {
     type: String,
     required: [true, "Username is required"],
-    unique: [true, "Username is already taken"],
-    minlength: [4, "Username must be at least 4 characters long"],
-    maxlength: [20, "Username must be less than 20 characters long"],
+    unique: true,
+    minlength: [4, "Username must be at least 4 characters"],
+    maxlength: [20, "Username must be less than 20 characters"],
     validate: {
       validator: containsValidChars,
       message:
@@ -20,9 +20,9 @@ const userShemca = mongoose.Schema({
   password: {
     type: String,
     required: [true, "Password is required"],
-    select: false, // Exclude from queries
-    minlength: [4, "Password must be at least 4 characters long"],
-    maxlength: [30, "Password must be less than 30 characters long"],
+    select: false, // Exclude from queries (NOTE: this doesn't apply on user creation)
+    minlength: [4, "Password must be at least 4 characters"],
+    maxlength: [30, "Password must be less than 30 characters"],
     validate: {
       validator: containsValidChars,
       message:
@@ -31,7 +31,7 @@ const userShemca = mongoose.Schema({
   },
   joinDate: {
     type: Date,
-    required: [true, "Date is required"],
+    required: [true, "Date of joining is required"],
   },
   firstName: {
     type: String,
@@ -52,10 +52,10 @@ const userShemca = mongoose.Schema({
 });
 
 // Unique validation for username
-userShemca.plugin(uniqueValidator);
+userSchema.plugin(uniqueValidator, { message: "Username is already taken" });
 
 // Hash password
-userShemca.pre("save", async function (next) {
+userSchema.pre("save", async function (next) {
   const user = this;
   const saltRounds = 10;
 
@@ -69,32 +69,36 @@ userShemca.pre("save", async function (next) {
 });
 
 // Capitalize names and add full name before saving
-userShemca.pre("save", function () {
+userSchema.pre("save", function () {
   const user = this;
   user.firstName =
     user.firstName.charAt(0).toUpperCase() +
     user.firstName.slice(1).toLowerCase();
   user.lastName =
-    user.firstName.charAt(0).toUpperCase() +
-    user.firstName.slice(1).toLowerCase();
+    user.lastName.charAt(0).toUpperCase() +
+    user.lastName.slice(1).toLowerCase();
   user.fullName = user.firstName + " " + user.lastName;
 });
 
 // Add passwordCompare method to User instance
-userShemca.methods.comparePassword = function (passwordToTest) {
-  bcrypt.compare(passwordToTest, this.password, (err, res) => {
-    if (err) throw err;
-    return res; // True or false
-  });
+userSchema.methods.comparePassword = function (passwordToTest) {
+  return bcrypt.compare(passwordToTest, this.password);
 };
 
+// Add full name virtual attribute
+userSchema.virtual("fullName").get(function () {
+  return this.firstName + " " + this.lastName;
+});
+
 // Cleanup JSON response with .toJSON() method
-userShemca.set("toJSON", {
+userSchema.set("toJSON", {
   transform: (_document, returnedObj) => {
     returnedObj.id = returnedObj._id.toString();
     delete returnedObj._id;
     delete returnedObj.__v;
+    // Remove password
+    delete returnedObj.password;
   },
 });
 
-module.exports = mongoose.model("User", userShemca);
+module.exports = mongoose.model("User", userSchema);
