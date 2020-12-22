@@ -20,7 +20,6 @@ const userSchema = mongoose.Schema({
   password: {
     type: String,
     required: [true, "Password is required"],
-    select: false, // Exclude from queries (NOTE: this doesn't apply on user creation)
     minlength: [4, "Password must be at least 4 characters"],
     maxlength: [30, "Password must be less than 30 characters"],
     validate: {
@@ -40,6 +39,9 @@ const userSchema = mongoose.Schema({
   lastName: {
     type: String,
     required: [true, "Last name is required"],
+  },
+  fullName: {
+    type: String,
   },
   bookmarks: {
     type: [
@@ -68,7 +70,7 @@ userSchema.pre("save", async function (next) {
   next();
 });
 
-// Capitalize names and add full name before saving
+// Capitalize names and set full name before saving
 userSchema.pre("save", function () {
   const user = this;
   user.firstName =
@@ -84,11 +86,6 @@ userSchema.pre("save", function () {
 userSchema.methods.comparePassword = function (passwordToTest) {
   return bcrypt.compare(passwordToTest, this.password);
 };
-
-// Add full name virtual attribute
-userSchema.virtual("fullName").get(function () {
-  return this.firstName + " " + this.lastName;
-});
 
 // Cleanup JSON response with .toJSON() method
 userSchema.set("toJSON", {
