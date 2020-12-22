@@ -32,7 +32,7 @@ describe("User model validation", () => {
         error = err;
       }
 
-      expect(error.errors["username"].message).toEqual("Username is required");
+      expect(error.errors["username"].message).toBe("Username is required");
     });
 
     test("must be at least 4 characters", async () => {
@@ -50,7 +50,7 @@ describe("User model validation", () => {
         error = err;
       }
 
-      expect(error.errors["username"].message).toEqual(
+      expect(error.errors["username"].message).toBe(
         "Username must be at least 4 characters"
       );
     });
@@ -68,7 +68,7 @@ describe("User model validation", () => {
         error = err;
       }
 
-      expect(error.errors["username"].message).toEqual(
+      expect(error.errors["username"].message).toBe(
         "Username must be less than 20 characters"
       );
     });
@@ -87,7 +87,7 @@ describe("User model validation", () => {
         error = err;
       }
 
-      expect(error.errors["username"].message).toEqual(
+      expect(error.errors["username"].message).toBe(
         "Username can only contain English letters, numbers or underscores"
       );
     });
@@ -106,7 +106,7 @@ describe("User model validation", () => {
 
       expect(firstUser).toBeDefined();
       expect(secondUser).not.toBeDefined();
-      expect(error.errors["username"].message).toEqual(
+      expect(error.errors["username"].message).toBe(
         "Username is already taken"
       );
     });
@@ -126,7 +126,7 @@ describe("User model validation", () => {
         error = err;
       }
 
-      expect(error.errors["password"].message).toEqual("Password is required");
+      expect(error.errors["password"].message).toBe("Password is required");
     });
 
     test("must be at least 4 characters", async () => {
@@ -144,7 +144,7 @@ describe("User model validation", () => {
         error = err;
       }
 
-      expect(error.errors["password"].message).toEqual(
+      expect(error.errors["password"].message).toBe(
         "Password must be at least 4 characters"
       );
     });
@@ -162,7 +162,7 @@ describe("User model validation", () => {
         error = err;
       }
 
-      expect(error.errors["password"].message).toEqual(
+      expect(error.errors["password"].message).toBe(
         "Password must be less than 30 characters"
       );
     });
@@ -181,7 +181,7 @@ describe("User model validation", () => {
         error = err;
       }
 
-      expect(error.errors["password"].message).toEqual(
+      expect(error.errors["password"].message).toBe(
         "Password can only contain English letters, numbers or underscores"
       );
     });
@@ -201,7 +201,7 @@ describe("User model validation", () => {
         error = err;
       }
 
-      expect(error.errors["joinDate"].message).toEqual(
+      expect(error.errors["joinDate"].message).toBe(
         "Date of joining is required"
       );
     });
@@ -222,10 +222,10 @@ describe("User model validation", () => {
         error = err;
       }
 
-      expect(error.errors["firstName"].message).toEqual(
+      expect(error.errors["firstName"].message).toBe(
         "First name is required"
       );
-      expect(error.errors["lastName"].message).toEqual("Last name is required");
+      expect(error.errors["lastName"].message).toBe("Last name is required");
     });
   });
 
@@ -242,7 +242,7 @@ describe("User model validation", () => {
     test("password is hashed", async () => {
       const newUser = await User.create(dummyUser);
 
-      expect(newUser.password).not.toEqual(dummyUser.password);
+      expect(newUser.password).not.toBe(dummyUser.password);
     });
 
     test("has a working comparePassword method", async () => {
@@ -258,7 +258,7 @@ describe("User model validation", () => {
       expect(isCorrectPassword).toBe(false);
     });
 
-    test("should return cleaned up JSON object with the toJSON method", async () => {
+    test("password is hidden with the toJSON method", async () => {
       let savedUser = await User.create({
         ...dummyUser,
       });

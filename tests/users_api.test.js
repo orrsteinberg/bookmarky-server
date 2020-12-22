@@ -63,7 +63,7 @@ describe("Users", () => {
       .expect(200)
       .expect("Content-Type", /application\/json/);
 
-    expect(existingUser.title).toEqual(request.body[0].title);
+    expect(existingUser.title).toBe(request.body[0].title);
   });
 
   test("return 404 error when id not found", async () => {
@@ -72,7 +72,7 @@ describe("Users", () => {
       .get(`${BASE_URL}/${nonExistingButValidId}`)
       .expect(404);
 
-    expect(response.body.error).toEqual("Not found");
+    expect(response.body.error).toBe("Not found");
   });
 
   test("return 400 status code and error when param id is invalid", async () => {
@@ -90,7 +90,7 @@ describe("Users", () => {
 
     const { body: usersAtEnd } = await api.get(BASE_URL);
 
-    expect(savedUser.title).toEqual(newUser.title);
+    expect(savedUser.title).toBe(newUser.title);
     expect(usersAtEnd).toHaveLength(initialUsers.length + 1);
   });
 
@@ -119,7 +119,7 @@ describe("Users", () => {
     const { body: usersAtEnd } = await api.get(BASE_URL);
 
     expect(usersAtEnd).toHaveLength(usersAtStart.length - 1);
-    expect(usersAtEnd[0].id).not.toEqual(usersAtStart[0].id);
+    expect(usersAtEnd[0].id).not.toBe(usersAtStart[0].id);
   });
 });
 

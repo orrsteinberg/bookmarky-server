@@ -60,7 +60,7 @@ describe("Bookmarks", () => {
       .expect(200)
       .expect("Content-Type", /application\/json/);
 
-    expect(exisitngBookmark.title).toEqual(request.body[0].title);
+    expect(exisitngBookmark.title).toBe(request.body[0].title);
   });
 
   test("return 404 error when id not found", async () => {
@@ -69,7 +69,7 @@ describe("Bookmarks", () => {
       .get(`${BASE_URL}/${nonExistingButValidId}`)
       .expect(404);
 
-    expect(response.body.error).toEqual("Not found");
+    expect(response.body.error).toBe("Not found");
   });
 
   test("return 400 status code and error when param id is invalid", async () => {
@@ -87,7 +87,7 @@ describe("Bookmarks", () => {
 
     const { body: bookmarksAtEnd } = await api.get(BASE_URL);
 
-    expect(savedBookmark.title).toEqual(newBookmark.title);
+    expect(savedBookmark.title).toBe(newBookmark.title);
     expect(bookmarksAtEnd).toHaveLength(initialBookmarks.length + 1);
   });
 
@@ -117,7 +117,7 @@ describe("Bookmarks", () => {
     const { body: bookmarksAtEnd } = await api.get(BASE_URL);
 
     expect(bookmarksAtEnd).toHaveLength(bookmarksAtStart.length - 1);
-    expect(bookmarksAtEnd[0].id).not.toEqual(bookmarksAtStart[0].id);
+    expect(bookmarksAtEnd[0].id).not.toBe(bookmarksAtStart[0].id);
   });
 });
 

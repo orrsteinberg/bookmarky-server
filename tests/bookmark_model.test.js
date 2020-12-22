@@ -28,7 +28,7 @@ describe("Bookmark model validation", () => {
         error = err;
       }
 
-      expect(error.errors["title"].message).toEqual("Title is required");
+      expect(error.errors["title"].message).toBe("Title is required");
     });
 
     test("must be less than 120 characters", async () => {
@@ -45,7 +45,7 @@ describe("Bookmark model validation", () => {
         error = err;
       }
 
-      expect(error.errors["title"].message).toEqual(
+      expect(error.errors["title"].message).toBe(
         "Bookmark title must be less than 120 characters"
       );
     });
@@ -57,7 +57,7 @@ describe("Bookmark model validation", () => {
       });
 
       const savedBookmark = await bookmark.save();
-      expect(savedBookmark.title).toEqual("Test title");
+      expect(savedBookmark.title).toBe("Test title");
     });
   });
 
@@ -75,7 +75,7 @@ describe("Bookmark model validation", () => {
         error = err;
       }
 
-      expect(error.errors["url"].message).toEqual("URL is required");
+      expect(error.errors["url"].message).toBe("URL is required");
     });
 
     test("must be a valid URL", async () => {
@@ -94,7 +94,7 @@ describe("Bookmark model validation", () => {
         error = err;
       }
 
-      expect(error.errors["url"].message).toEqual("Invalid URL: " + invalidUrl);
+      expect(error.errors["url"].message).toBe("Invalid URL: " + invalidUrl);
     });
   });
 
@@ -130,7 +130,7 @@ describe("Bookmark model validation", () => {
         error = err;
       }
 
-      expect(error.errors["description"].message).toEqual(
+      expect(error.errors["description"].message).toBe(
         "Bookmark description must be less than 2000 characters"
       );
     });
@@ -150,7 +150,7 @@ describe("Bookmark model validation", () => {
         error = err;
       }
 
-      expect(error.errors["date"].message).toEqual("Date is required");
+      expect(error.errors["date"].message).toBe("Date is required");
     });
   });
 
