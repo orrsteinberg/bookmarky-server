@@ -30,6 +30,7 @@ function errorHandler(error, req, res, next) {
       }, {});
       return res.status(400).json({ error: errorMessages });
     }
+    // Otherwise return single error message
     return res.status(400).json({ error: error.message });
   }
 
@@ -37,12 +38,16 @@ function errorHandler(error, req, res, next) {
     return res.status(404).json({ error: "Not found" });
   }
 
+  case "UnauthorizedError": {
+    return res.status(401).json({ error: error.message });
+  }
+
   case "JsonWebTokenError": {
     return res.status(400).json({ error: "Invalid token" });
   }
 
   default: {
-    return res.status(500).json({ error: error.message });
+    return res.status(error.status).json({ error: error.message });
   }
   }
 }
