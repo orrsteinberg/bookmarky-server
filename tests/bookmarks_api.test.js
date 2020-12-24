@@ -210,6 +210,48 @@ describe("Bookmarks", () => {
 
     expect(bookmarksAtEnd).toHaveLength(bookmarksAtStart.length);
   });
+
+  test("likes can be toggled with authorized token", async () => {
+    const { body: bookmarksAtStart } = await api.get(BASE_URL);
+    const bookmarkId = bookmarksAtStart[0].id;
+    const decodedToken = jwt.verify(authorizedToken, SECRET);
+
+    let response;
+
+    // Add like
+    response = await api
+      .put(`${BASE_URL}/${bookmarkId}/toggleLike`)
+      .send(newBookmark)
+      .set("Authorization", `Bearer ${authorizedToken}`)
+      .expect(200)
+      .expect("Content-Type", /application\/json/);
+
+    expect(response.body.error).not.toBeDefined();
+    expect(response.body.likesCount).toBe(1);
+    expect(response.body.likes).toContain(decodedToken.id);
+
+    // Remove like
+    response = await api
+      .put(`${BASE_URL}/${bookmarkId}/toggleLike`)
+      .send(newBookmark)
+      .set("Authorization", `Bearer ${authorizedToken}`)
+      .expect(200)
+      .expect("Content-Type", /application\/json/);
+
+    expect(response.body.error).not.toBeDefined();
+    expect(response.body.likesCount).toBe(0);
+    expect(response.body.likes).not.toContain(decodedToken.id);
+  });
+
+  test("liking a bookmark fails (401) with unauthorized token", async () => {
+    const response = await api
+      .post(BASE_URL)
+      .send(newBookmark)
+      .expect(401)
+      .expect("Content-Type", /application\/json/);
+
+    expect(response.body.error).toBe("Token is missing or invalid");
+  });
 });
 
 afterAll(() => {
