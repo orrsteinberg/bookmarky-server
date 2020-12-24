@@ -27,9 +27,11 @@ router.post("/", async (req, res, next) => {
 
   const token = jwt.sign(userForToken, SECRET);
 
-  res
-    .status(200)
-    .json({ token, username: user.username, fullName: user.fullName });
+  res.status(200).json({
+    token,
+    username: user.username,
+    firstName: user.firsName,
+  });
 });
 
 module.exports = router;
