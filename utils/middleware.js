@@ -1,5 +1,20 @@
 const morgan = require("morgan");
 
+function tokenExtractor(req, res, next) {
+  if (
+    req.headers.authorization &&
+    req.headers.authorization.toLowerCase().startsWith("bearer ")
+  ) {
+    // Extract the token itself, omit the initial 'bearer '
+    const token = req.headers.authorization.split(" ")[1];
+    req.body.token = token;
+  } else {
+    req.body.token = null;
+  }
+
+  next();
+}
+
 function errorHandler(error, req, res, next) {
   switch (error.name) {
   case "ValidationError": {
@@ -43,7 +58,13 @@ function errorHandler(error, req, res, next) {
   }
 
   case "JsonWebTokenError": {
-    return res.status(401).json({ error: "Invalid token" });
+    return res.status(401).json({ error: "Token is missing or invalid" });
+  }
+
+  case "ForbiddenError": {
+    return res
+      .status(403)
+      .json({ error: "Missing permission for modifying this resource" });
   }
 
   default: {
@@ -64,6 +85,7 @@ function logger() {
 }
 
 module.exports = {
+  tokenExtractor,
   errorHandler,
   unknownEndpoint,
   logger,
