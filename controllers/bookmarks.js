@@ -113,11 +113,46 @@ router.delete("/:id", async (req, res, next) => {
   }
 });
 
-// Update one -- TODO
+// Update one
 
 // - toggle like
 router.put("/:id/toggleLike", async (req, res, next) => {
-  return res.send(`Toggle like for ${req.params.id}`);
+  const { token } = req.body;
+
+  try {
+    const decodedToken = jwt.verify(token, SECRET);
+
+    if (!token || !decodedToken.id) {
+      return next({ name: "JsonWebTokenError" });
+    }
+
+    const bookmarkToUpdate = await Bookmark.findById(req.params.id);
+
+    if (!bookmarkToUpdate) {
+      return next({ name: "NotFoundError" });
+    }
+
+    let updatedBookmark;
+
+    // If the user hasn't already liked the bookmark
+    if (!bookmarkToUpdate.likes.includes(decodedToken.id)) {
+      // Add like
+      bookmarkToUpdate.likes.push(decodedToken.id);
+      bookmarkToUpdate.likesCount++;
+      updatedBookmark = await bookmarkToUpdate.save();
+    } else {
+      // Remove like
+      bookmarkToUpdate.likes = bookmarkToUpdate.likes.filter(
+        (id) => id.toString() !== decodedToken.id
+      );
+      bookmarkToUpdate.likesCount--;
+      updatedBookmark = await bookmarkToUpdate.save();
+    }
+
+    return res.status(200).json(updatedBookmark.toJSON());
+  } catch (err) {
+    next(err);
+  }
 });
 
 module.exports = router;
