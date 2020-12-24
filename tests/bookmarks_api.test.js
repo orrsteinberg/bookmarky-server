@@ -1,12 +1,35 @@
 const supertest = require("supertest");
+const jwt = require("jsonwebtoken");
 
 const app = require("../app");
 const db = require("../utils/db");
+const { SECRET } = require("../utils/config");
 const Bookmark = require("../models/Bookmark");
+const User = require("../models/User");
 
 const api = supertest(app);
 
+// Helpers
 const BASE_URL = "/api/bookmarks";
+let authorizedToken;
+let unauthorizedToken;
+
+const initialUsers = [
+  {
+    username: "testuser1",
+    password: "secret",
+    firstName: "john",
+    lastName: "doe",
+    joinDate: new Date().toISOString(),
+  },
+  {
+    username: "testuser2",
+    password: "verysecret",
+    firstName: "jane",
+    lastName: "doe",
+    joinDate: new Date().toISOString(),
+  },
+];
 
 const initialBookmarks = [
   {
@@ -35,8 +58,35 @@ beforeAll(() => {
 });
 
 beforeEach(async () => {
+  // Clear DB
   await Bookmark.deleteMany({});
-  await Promise.all(initialBookmarks.map((b) => Bookmark.create(b)));
+  await User.deleteMany({});
+
+  // Create users
+  const users = await Promise.all(initialUsers.map((u) => User.create(u)));
+
+  const userWithBookmarks = {
+    id: users[0]._id.toString(),
+    username: users[0].username,
+  };
+
+  const userWithoutBookmarks = {
+    id: users[1]._id.toString(),
+    username: users[1].username,
+  };
+
+  authorizedToken = jwt.sign(userWithBookmarks, SECRET);
+  unauthorizedToken = jwt.sign(userWithoutBookmarks, SECRET);
+
+  // Create bookmarks and assign them all to userWithBookmarks
+  await Promise.all(
+    initialBookmarks.map((bookmark) =>
+      Bookmark.create({
+        ...bookmark,
+        user: userWithBookmarks.id,
+      })
+    )
+  );
 });
 
 describe("Bookmarks", () => {
@@ -78,20 +128,32 @@ describe("Bookmarks", () => {
     expect(response.body.error).toBeDefined();
   });
 
-  test("can be created", async () => {
-    const { body: savedBookmark } = await api
+  test("can be created with authorized token", async () => {
+    const response = await api
       .post(BASE_URL)
       .send(newBookmark)
+      .set("Authorization", `Bearer ${authorizedToken}`)
       .expect(201)
       .expect("Content-Type", /application\/json/);
 
     const { body: bookmarksAtEnd } = await api.get(BASE_URL);
 
-    expect(savedBookmark.title).toBe(newBookmark.title);
+    expect(response.body.error).not.toBeDefined();
+    expect(response.body.title).toBe(newBookmark.title);
     expect(bookmarksAtEnd).toHaveLength(initialBookmarks.length + 1);
   });
 
-  test("creating a bookmark fails with invalid data", async () => {
+  test("creating a bookmark fails (401) with unauthorized token", async () => {
+    const response = await api
+      .post(BASE_URL)
+      .send(newBookmark)
+      .expect(401)
+      .expect("Content-Type", /application\/json/);
+
+    expect(response.body.error).toBe("Token is missing or invalid");
+  });
+
+  test("creating a bookmark fails (400) with invalid data", async () => {
     const response = await api
       .post(BASE_URL)
       .send({
@@ -100,6 +162,7 @@ describe("Bookmarks", () => {
         date: undefined,
         url: "www.what",
       })
+      .set("Authorization", `Bearer ${authorizedToken}`)
       .expect(400);
 
     const { body: bookmarksAtEnd } = await api.get(BASE_URL);
@@ -108,16 +171,44 @@ describe("Bookmarks", () => {
     expect(bookmarksAtEnd).toHaveLength(initialBookmarks.length);
   });
 
-  test("can be deleted", async () => {
+  test("can be deleted with authorized token", async () => {
     const { body: bookmarksAtStart } = await api.get(BASE_URL);
     const bookmarkId = bookmarksAtStart[0].id;
 
-    await api.delete(`${BASE_URL}/${bookmarkId}`).expect(204);
+    await api
+      .delete(`${BASE_URL}/${bookmarkId}`)
+      .set("Authorization", `Bearer ${authorizedToken}`)
+      .expect(204);
 
     const { body: bookmarksAtEnd } = await api.get(BASE_URL);
 
     expect(bookmarksAtEnd).toHaveLength(bookmarksAtStart.length - 1);
     expect(bookmarksAtEnd[0].id).not.toBe(bookmarksAtStart[0].id);
+  });
+
+  test("fails to be deleted (401) without a token", async () => {
+    const { body: bookmarksAtStart } = await api.get(BASE_URL);
+    const bookmarkId = bookmarksAtStart[0].id;
+
+    await api.delete(`${BASE_URL}/${bookmarkId}`).expect(401);
+
+    const { body: bookmarksAtEnd } = await api.get(BASE_URL);
+
+    expect(bookmarksAtEnd).toHaveLength(bookmarksAtStart.length);
+  });
+
+  test("fails to be deleted (403) with wrong token", async () => {
+    const { body: bookmarksAtStart } = await api.get(BASE_URL);
+    const bookmarkId = bookmarksAtStart[0].id;
+
+    await api
+      .delete(`${BASE_URL}/${bookmarkId}`)
+      .set("Authorization", `Bearer ${unauthorizedToken}`)
+      .expect(403);
+
+    const { body: bookmarksAtEnd } = await api.get(BASE_URL);
+
+    expect(bookmarksAtEnd).toHaveLength(bookmarksAtStart.length);
   });
 });
 

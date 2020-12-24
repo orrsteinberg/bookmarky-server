@@ -32,7 +32,6 @@ describe("Login", () => {
       .expect(200)
       .expect("Content-Type", /application\/json/);
 
-    expect(response.body).toBeDefined();
     expect(response.body.token).toBeDefined();
     expect(response.body.username).toBe(initialUser.username);
   });

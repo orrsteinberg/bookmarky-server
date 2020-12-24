@@ -1,11 +1,14 @@
 const supertest = require("supertest");
+const jwt = require("jsonwebtoken");
 
 const app = require("../app");
 const db = require("../utils/db");
+const { SECRET } = require("../utils/config");
 const User = require("../models/User");
 
 const api = supertest(app);
 
+// Helpers
 const BASE_URL = "/api/users";
 
 const initialUsers = [
@@ -81,7 +84,7 @@ describe("Users", () => {
     expect(response.body.error).toBeDefined();
   });
 
-  test("can be created", async () => {
+  test("return a token along with new user data on creation", async () => {
     const { body: savedUser } = await api
       .post(BASE_URL)
       .send(newUser)
@@ -90,6 +93,7 @@ describe("Users", () => {
 
     const { body: usersAtEnd } = await api.get(BASE_URL);
 
+    expect(savedUser.token).toBeDefined();
     expect(savedUser.title).toBe(newUser.title);
     expect(usersAtEnd).toHaveLength(initialUsers.length + 1);
   });
@@ -110,16 +114,56 @@ describe("Users", () => {
     expect(usersAtEnd).toHaveLength(initialUsers.length);
   });
 
-  test("can be deleted", async () => {
+  test("can be deleted with authorized token", async () => {
     const { body: usersAtStart } = await api.get(BASE_URL);
     const userId = usersAtStart[0].id;
+    const authorizedToken = jwt.sign(
+      {
+        id: userId,
+      },
+      SECRET
+    );
 
-    await api.delete(`${BASE_URL}/${userId}`).expect(204);
+    await api
+      .delete(`${BASE_URL}/${userId}`)
+      .set("Authorization", `Bearer ${authorizedToken}`)
+      .expect(204);
 
     const { body: usersAtEnd } = await api.get(BASE_URL);
 
     expect(usersAtEnd).toHaveLength(usersAtStart.length - 1);
     expect(usersAtEnd[0].id).not.toBe(usersAtStart[0].id);
+  });
+
+  test("deleting a user fails (401) without a token", async () => {
+    const { body: usersAtStart } = await api.get(BASE_URL);
+    const userId = usersAtStart[0].id;
+
+    await api.delete(`${BASE_URL}/${userId}`).expect(401);
+
+    const { body: usersAtEnd } = await api.get(BASE_URL);
+
+    expect(usersAtEnd).toHaveLength(usersAtStart.length);
+  });
+
+  test("deleting a user fails (403) with the wrong token", async () => {
+    const { body: usersAtStart } = await api.get(BASE_URL);
+    const userId = usersAtStart[0].id;
+    const unauthorizedToken = jwt.sign(
+      {
+        id: usersAtStart[1], // not the same user as the one we're trying to delete
+      },
+      SECRET
+    );
+
+    await api
+      .delete(`${BASE_URL}/${userId}`)
+      .set("Authorization", `Bearer ${unauthorizedToken}`)
+      .expect(403);
+
+    const { body: usersAtEnd } = await api.get(BASE_URL);
+
+    expect(usersAtEnd).toHaveLength(usersAtStart.length);
   });
 });
 
