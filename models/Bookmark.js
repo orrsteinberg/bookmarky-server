@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const User = require("./User");
 
 const bookmarkSchema = mongoose.Schema({
   title: {
@@ -7,11 +8,19 @@ const bookmarkSchema = mongoose.Schema({
     trim: true,
     maxlength: [120, "Bookmark title must be less than 120 characters"],
   },
-  // user: {
-  //   type: mongoose.Schema.Types.ObjectId,
-  //   ref: "User"
-  //   required: [true, "User ID is required"]
-  // }
+  user: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+    required: [true, "User ID is required"],
+    validate: {
+      validator: async (userId) => {
+        // Check that the user exists
+        const existingUser = await User.findById(userId);
+        return Boolean(existingUser);
+      },
+      message: "Invalid user ID: user doesn't exist",
+    },
+  },
   url: {
     type: String,
     required: [true, "URL is required"],
@@ -36,6 +45,7 @@ const bookmarkSchema = mongoose.Schema({
     type: [
       {
         type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
       },
     ],
   },
