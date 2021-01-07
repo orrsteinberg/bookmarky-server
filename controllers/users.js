@@ -18,7 +18,7 @@ router.get("/:id", async (req, res, next) => {
   try {
     const user = await User.findById(req.params.id).populate({
       path: "bookmarks",
-      select: ["title", "date", "likesCount"],
+      select: ["title", "createdAt", "likesCount"],
     });
 
     if (!user) {
@@ -33,7 +33,7 @@ router.get("/:id", async (req, res, next) => {
 
 // Create one
 router.post("/", async (req, res, next) => {
-  const { username, password, firstName, lastName, joinDate } = req.body;
+  const { username, password, firstName, lastName } = req.body;
 
   try {
     // Mongoose takes care of password hashing and validation
@@ -42,7 +42,6 @@ router.post("/", async (req, res, next) => {
       password,
       firstName,
       lastName,
-      joinDate,
     });
 
     // Send back a token

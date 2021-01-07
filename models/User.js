@@ -28,9 +28,9 @@ const userSchema = mongoose.Schema({
         "Password can only contain English letters, numbers or underscores",
     },
   },
-  joinDate: {
+  createdAt: {
     type: Date,
-    required: [true, "Date of joining is required"],
+    default: Date.now
   },
   firstName: {
     type: String,

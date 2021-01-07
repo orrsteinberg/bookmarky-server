@@ -36,9 +36,9 @@ const bookmarkSchema = mongoose.Schema({
     maxlength: [2000, "Bookmark description must be less than 2000 characters"],
     trim: true,
   },
-  date: {
+  createdAt: {
     type: Date,
-    required: [true, "Date is required"],
+    default: Date.now
   },
   likes: {
     // Array of user IDs who liked the bookmark

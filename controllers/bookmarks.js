@@ -38,7 +38,7 @@ router.get("/:id", async (req, res, next) => {
 
 // Create one
 router.post("/", async (req, res, next) => {
-  const { title, url, description, date, token } = req.body;
+  const { title, url, description, token } = req.body;
 
   try {
     const decodedToken = jwt.verify(token, SECRET);
@@ -54,7 +54,6 @@ router.post("/", async (req, res, next) => {
       title,
       url,
       description,
-      date,
       user: decodedToken.id,
     });
 
