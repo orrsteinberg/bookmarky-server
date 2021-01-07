@@ -56,7 +56,7 @@ router.post("/", async (req, res, next) => {
     );
 
     return res.status(201).json({
-      ...newUser,
+      newUser,
       token,
     });
   } catch (err) {
