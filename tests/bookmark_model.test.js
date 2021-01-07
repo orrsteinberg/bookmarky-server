@@ -6,7 +6,6 @@ const dummyBookmark = {
   title: "Test title",
   url: "https://www.test.com",
   description: "Test description",
-  date: new Date().toISOString(),
 };
 
 const dummyUser = {
@@ -14,7 +13,6 @@ const dummyUser = {
   password: "secret",
   firstName: "john",
   lastName: "doe",
-  joinDate: new Date().toISOString(),
 };
 
 let existingUserId;
@@ -206,24 +204,6 @@ describe("Bookmark model validation", () => {
     });
   });
 
-  describe("date", () => {
-    test("is required", async () => {
-      let error;
-
-      try {
-        const bookmark = new Bookmark({
-          ...dummyBookmark,
-          date: undefined,
-        });
-        await bookmark.validate();
-      } catch (err) {
-        error = err;
-      }
-
-      expect(error.errors["date"].message).toBe("Date is required");
-    });
-  });
-
   describe("on save", () => {
     test("should initialize with 0 likes", async () => {
       let savedBookmark = await Bookmark.create({
@@ -232,6 +212,15 @@ describe("Bookmark model validation", () => {
       });
 
       expect(savedBookmark.likesCount).toBe(0);
+    });
+
+    test("should have a valid createdAt property", async () => {
+      let savedBookmark = await Bookmark.create({
+        ...dummyBookmark,
+        user: existingUserId,
+      });
+
+      expect(new Date(savedBookmark.createdAt)).toBeDefined();
     });
   });
 

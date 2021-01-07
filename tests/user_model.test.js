@@ -6,7 +6,6 @@ const dummyUser = {
   password: "secret",
   firstName: "john",
   lastName: "doe",
-  joinDate: new Date().toISOString(),
 };
 
 beforeAll(async () => {
@@ -187,26 +186,6 @@ describe("User model validation", () => {
     });
   });
 
-  describe("date", () => {
-    test("is required", async () => {
-      let error;
-
-      try {
-        const user = new User({
-          ...dummyUser,
-          joinDate: undefined,
-        });
-        await user.validate();
-      } catch (err) {
-        error = err;
-      }
-
-      expect(error.errors["joinDate"].message).toBe(
-        "Date of joining is required"
-      );
-    });
-  });
-
   describe("first and last names", () => {
     test("are required", async () => {
       let error;
@@ -222,9 +201,7 @@ describe("User model validation", () => {
         error = err;
       }
 
-      expect(error.errors["firstName"].message).toBe(
-        "First name is required"
-      );
+      expect(error.errors["firstName"].message).toBe("First name is required");
       expect(error.errors["lastName"].message).toBe("Last name is required");
     });
   });
@@ -235,6 +212,12 @@ describe("User model validation", () => {
       expect(newUser.firstName).toBe("John");
       expect(newUser.lastName).toBe("Doe");
       expect(newUser.fullName).toBe("John Doe");
+    });
+
+    test("should have a valid createdAt property", async () => {
+      const newUser = await User.create(dummyUser);
+
+      expect(new Date(newUser.createdAt)).toBeDefined();
     });
   });
 
