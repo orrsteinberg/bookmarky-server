@@ -17,14 +17,12 @@ const initialUsers = [
     password: "secret",
     firstName: "john",
     lastName: "doe",
-    joinDate: new Date().toISOString(),
   },
   {
     username: "testuser2",
     password: "verysecret",
     firstName: "jane",
     lastName: "doe",
-    joinDate: new Date().toISOString(),
   },
 ];
 
@@ -33,7 +31,6 @@ const newUser = {
   password: "secret",
   firstName: "test",
   lastName: "user",
-  joinDate: new Date().toISOString(),
 };
 
 beforeAll(() => {
@@ -104,7 +101,7 @@ describe("Users", () => {
       .send({
         ...newUser,
         username: "123",
-        joinDate: undefined,
+        firstName: undefined,
       })
       .expect(400);
 

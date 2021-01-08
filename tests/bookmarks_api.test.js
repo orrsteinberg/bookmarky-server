@@ -20,14 +20,12 @@ const initialUsers = [
     password: "secret",
     firstName: "john",
     lastName: "doe",
-    joinDate: new Date().toISOString(),
   },
   {
     username: "testuser2",
     password: "verysecret",
     firstName: "jane",
     lastName: "doe",
-    joinDate: new Date().toISOString(),
   },
 ];
 
@@ -36,13 +34,11 @@ const initialBookmarks = [
     title: "Test title",
     url: "https://www.test.com",
     description: "Test description",
-    date: new Date().toISOString(),
   },
   {
     title: "Another test title",
     url: "https://www.test.com",
     description: "Another description",
-    date: new Date().toISOString(),
   },
 ];
 
@@ -50,7 +46,6 @@ const newBookmark = {
   title: "New bookmark",
   url: "https://www.test.com",
   description: "Bookmark description",
-  date: new Date().toISOString(),
 };
 
 beforeAll(() => {
@@ -159,7 +154,6 @@ describe("Bookmarks", () => {
       .send({
         ...newBookmark,
         title: "123",
-        date: undefined,
         url: "www.what",
       })
       .set("Authorization", `Bearer ${authorizedToken}`)
