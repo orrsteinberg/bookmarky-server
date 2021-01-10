@@ -7,10 +7,12 @@ const User = require("../models/User");
 // Read many
 router.get("/", async (req, res, next) => {
   try {
-    const bookmarks = await Bookmark.find({}).populate({
-      path: "user",
-      select: ["username", "fullName"],
-    });
+    const bookmarks = await Bookmark.find({})
+      .sort({ createdAt: -1 })
+      .populate({
+        path: "user",
+        select: ["username", "fullName"],
+      });
 
     return res.json(bookmarks.map((b) => b.toJSON()));
   } catch (err) {
@@ -147,6 +149,13 @@ router.put("/:id/toggleLike", async (req, res, next) => {
       bookmarkToUpdate.likesCount--;
       updatedBookmark = await bookmarkToUpdate.save();
     }
+
+    await updatedBookmark
+      .populate({
+        path: "user",
+        select: ["username", "fullName"],
+      })
+      .execPopulate();
 
     return res.status(200).json(updatedBookmark.toJSON());
   } catch (err) {
